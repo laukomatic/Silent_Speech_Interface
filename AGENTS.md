@@ -58,15 +58,14 @@
 
 - **Commit at the end of every session (or after each logical chunk of work)** — this is the user's standing rule, not optional.
 - Remote: `https://github.com/laukomatic/Silent_Speech_Interface.git` (configured as `origin`).
-- The user will provide a GitHub PAT on request for pushing. Do not store the token in any file in the repo; use it inline in the push command and let it be forgotten.
-- Standard commit flow:
+- A GitHub MCP server is configured in `~/.config/opencode/opencode.jsonc` (`github` entry, `@modelcontextprotocol/server-github` with the user's PAT in `GITHUB_PERSONAL_ACCESS_TOKEN`). Prefer the MCP tools (`mcp_github_*`) for repo/issue/PR operations.
+- For `git push` from the shell, the MCP doesn't cover raw git transport. Use either:
   ```bash
-  git add <files>
-  git commit -m "<message>"
-  # when remote push is needed:
-  git push https://<TOKEN>@github.com/laukomatic/Silent_Speech_Interface.git master
+  git push origin master                                    # if a credential helper is configured
+  # or
+  git push https://x-access-token:<PAT>@github.com/laukomatic/Silent_Speech_Interface.git master
   ```
-- After a push, drop the in-memory token reference and do not log it.
+  Don't store the token in the repo or in any committed file. The PAT lives in `~/.config/opencode/opencode.jsonc`; that's the only place it should be.
 - **Never commit**: anything in `data/`, `*.pyc`, `__pycache__/`, `.venv/`, `venv/`, `*.egg-info/`, `.ipynb_checkpoints/`, `.env`, `*.pem`, `*.key`. The `.gitignore` already covers these.
 
 ## Things that look generic but aren't

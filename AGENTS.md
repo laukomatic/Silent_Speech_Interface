@@ -2,8 +2,8 @@
 
 ## State of this repo
 
-- **No code yet.** Only docs: `README.md` (overview), `PLAN.md` (detailed step-by-step), `environment.yml` (conda env spec).
-- Repo is on `master` with no commits. Anything added is fair game; nothing is sacred yet.
+- **No application code yet.** Files: `README.md` (overview), `PLAN.md` (detailed step-by-step), `AGENTS.md` (this file), `environment.yml` (conda env), `pyproject.toml` (ruff/mypy/pytest config), `.pre-commit-config.yaml`, `.gitignore`, `tests/test_smoke.py` (env-validation).
+- Anything added is fair game; nothing is sacred yet.
 - The plan and README are the **source of truth** for what to build. Read them before suggesting architecture.
 
 ## Canonical plan location
@@ -48,41 +48,43 @@
 - For R-peak detection, use `scipy.signal.find_peaks` first; reach for `neurokit2` only if you need a more robust offline analysis. The plan asks for a Pan-Tompkins implementation too — keep it as a learning exercise, not the production path.
 - Save raw CSV per session with a unix-timestamped filename; do not overwrite on session start.
 
-## What is NOT decided yet
-
-- No test framework is set up. The repo has no executable code yet, so there is nothing to test.
-- No pre-commit hooks. No CI.
-- No CI.
-
-## Linters, formatters, type checks, pre-commit
+## Linters, formatters, type checks, pre-commit, tests
 
 **Linter / formatter / type checker — installed in the `ssi` conda env:**
-- **ruff** — fast linter. Catches unused imports, undefined names, common bugs (rules: `E`, `F`, `W`, `I` for isort, plus `B` for bugbear, `UP` for pyupgrade, `SIM` for simplify). Run with `ruff check .` and `ruff format .`.
-- **black** — opinionated code formatter. No config needed, eliminates formatting debate. Run with `black .`.
-- **mypy** — static type checker. Catches type errors before runtime. Run with `mypy pc/ firmware/`. Strict mode (`--strict`) once code is more mature.
+- **ruff** — single tool for both lint and format. Catches unused imports, undefined names, common bugs (rules: `E`, `F`, `W`, `I`, `B`, `UP`, `SIM`, `C4`, `PIE`, `RUF`; see `pyproject.toml`). Run with `ruff check .` and `ruff format .`.
+- **mypy** — static type checker in **strict mode** from day one. Run with `mypy .`. Catches type errors before runtime — vital for signal-processing code where unit mismatches (samples vs ms vs seconds) are easy to get wrong.
 
 **Order of operations** (so the chain doesn't fight itself):
-1. `ruff format .` (or just `black .` — they conflict, pick one. Ruff's formatter is faster and now considered feature-complete; we use ruff for both lint + format).
+1. `ruff format .`
 2. `ruff check . --fix` (apply safe auto-fixes)
-3. `mypy pc/`
+3. `mypy .`
+
+**Tests** — `pytest`, configured in `pyproject.toml`. Run with `pytest tests/`.
+- `tests/test_smoke.py` is the env-validation smoke test (Python version, all deps importable).
+- Add focused tests alongside new modules: `tests/test_<module>.py` per `pc/<module>.py`. Strict mode + `--strict-markers` + warnings as errors — keep tests clean.
 
 **What are pre-commit hooks?**
 Git has a feature where scripts in `.git/hooks/` (or `.husky/`) run automatically before/after certain git actions. The most common one is `pre-commit` — a Python tool (`pre-commit.com`) that runs *before* each `git commit`. If any hook fails, the commit is blocked until you fix the issue.
 
-Typical hooks for this project:
+This project's hooks (`.pre-commit-config.yaml`):
 - `ruff check --fix` + `ruff format` on staged files
-- `mypy` on staged files
+- `mypy` on staged files (strict, scoped to `pc/` and `tests/`)
 - `nbstripout` on staged `.ipynb` files (strips output so notebooks don't bloat the diff)
-- `detect-private-key` / basic secret scan
+- `detect-private-key` / trailing-whitespace / end-of-file-fixer / mixed-line-ending (LF)
 
-Once installed (`pre-commit install`), they run on every commit automatically — no need to remember. CI can re-run the same hooks to catch anything that slipped through locally.
-
-The actual `.pre-commit-config.yaml` is set up alongside the other config files. Dev installs it once with `pre-commit install` after `pip install pre-commit` (or `conda install pre-commit`).
+Install once per clone:
+```bash
+conda activate ssi
+pip install pre-commit        # already in environment.yml
+pre-commit install
+```
 
 Run on demand (without committing):
 ```bash
 pre-commit run --all-files
 ```
+
+The `pc/` package doesn't exist yet, so the pre-commit hooks will only run over `tests/` and `pyproject.toml` until modules land. As soon as the first `pc/*.py` file shows up, the ruff + mypy hooks will start working on it.
 
 ## Commit & push workflow
 
@@ -102,6 +104,6 @@ pre-commit run --all-files
 
 - "Use venv" — wrong. Use conda (`environment.yml`).
 - "Add gitignore for node_modules" — there's no Node in this project.
-- "Configure CI with GitHub Actions" — repo has no commits and no code yet; CI is premature.
-- "Use a separate branch per phase" — there's no branching convention. Use `master` until told otherwise.
-- "You should squash-merge with a conventional commit prefix" — no convention yet, plain messages are fine.
+- "Configure CI with GitHub Actions" — repo has no code yet; CI is deliberately deferred.
+- "Use a separate branch per phase" — there's no branching convention. Use `master` for everything.
+- "You should squash-merge with a conventional commit prefix" — plain commit messages only. No `feat:` / `fix:` prefixes.

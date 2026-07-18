@@ -1,0 +1,84 @@
+# pyproject.toml — single config for ruff, mypy, pytest
+# ruff handles both lint and format (no black)
+# mypy runs in strict mode from day one
+
+[project]
+name = "silent-speech-interface"
+version = "0.0.0"
+description = "ADS1293 + ESP32 biopotential acquisition; ECG heart-beat detection and silent speech recognition"
+requires-python = ">=3.11"
+readme = "README.md"
+
+# ----- ruff (lint + format) -----
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [
+    ".private",
+    "data",
+    "experiments",
+]
+
+[tool.ruff.lint]
+# Start strict-ish: real bug catchers + style essentials.
+# Add more rule families as code lands (e.g. ANN for annotations, PL for pylint).
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes (undefined names, unused imports)
+    "I",    # isort
+    "B",    # flake8-bugbear (common bugs)
+    "UP",   # pyupgrade (modern Python syntax)
+    "SIM",  # flake8-simplify
+    "C4",   # flake8-comprehensions
+    "PIE",  # flake8-pie
+    "RUF",  # ruff-specific rules
+]
+ignore = [
+    "E501",   # line length — handled by formatter
+    "B008",   # function calls in defaults (e.g. FastAPI Depends) — enable per-project when needed
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["ssi"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+# ----- mypy (strict) -----
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+check_untyped_defs = true
+
+# Third-party libs without stubs — silence on a per-module basis
+[[tool.mypy.overrides]]
+module = [
+    "neurokit2.*",
+    "pyqtgraph.*",
+]
+ignore_missing_imports = true
+
+# Tests can be a bit looser
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--tb=short",
+]
+filterwarnings = [
+    "error",
+]

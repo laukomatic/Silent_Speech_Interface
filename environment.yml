@@ -14,9 +14,8 @@ dependencies:
   - pip:
       - pyqtgraph
       - neurokit2
-      # Dev tools — linter, formatter, type checker, pre-commit, tests
+      # Dev tools — ruff handles both lint and format; mypy strict; tests
       - ruff
-      - black
       - mypy
       - pre-commit
       - pytest

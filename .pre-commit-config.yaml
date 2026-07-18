@@ -2,8 +2,10 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.7.4
     hooks:
+      # Lint + autofix
       - id: ruff
         args: [--fix]
+      # Format (ruff's formatter replaces black; same opinionated style)
       - id: ruff-format
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -18,11 +20,6 @@ repos:
       - id: mixed-line-ending
         args: [--fix=lf]
 
-  - repo: https://github.com/keewis/blackdoc
-    rev: v1.18.0
-    hooks:
-      - id: blackdoc
-
   - repo: https://github.com/kynan/nbstripout
     rev: 0.8.1
     hooks:
@@ -31,6 +28,7 @@ repos:
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.13.0
     hooks:
+      # Strict mypy on the pc/ package. Strict per pyproject.toml.
       - id: mypy
-        files: ^pc/
+        files: ^(pc/|tests/)
         additional_dependencies: [numpy, scipy, scikit-learn]

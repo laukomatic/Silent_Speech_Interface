@@ -32,4 +32,3 @@ dist/
 
 # Private local config (Anytype IDs, tokens, local-only paths)
 .private/
-

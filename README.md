@@ -83,6 +83,8 @@ silent-speech-interface/
 │   ├── hrv.py             # HRV features
 │   ├── visualize.py       # Live plotting
 │   └── utils.py
+├── tests/                 # pytest (one test file per pc/ module)
+│   └── test_smoke.py
 ├── data/                  # Collected datasets (gitignored)
 │   ├── raw/               # Raw CSV per session
 │   └── processed/         # Annotated R-peaks, features
@@ -90,7 +92,10 @@ silent-speech-interface/
 │   ├── 01_eda.ipynb
 │   ├── 02_rpeak_tuning.ipynb
 │   └── 03_hrv_analysis.ipynb
+├── .pre-commit-config.yaml
 ├── environment.yml
+├── pyproject.toml         # ruff + mypy strict + pytest config
 ├── PLAN.md
+├── AGENTS.md
 └── README.md
 ```

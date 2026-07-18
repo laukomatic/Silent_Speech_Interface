@@ -14,3 +14,11 @@ dependencies:
   - pip:
       - pyqtgraph
       - neurokit2
+      # Dev tools — linter, formatter, type checker, pre-commit, tests
+      - ruff
+      - black
+      - mypy
+      - pre-commit
+      - pytest
+      - pytest-cov
+      - nbstripout

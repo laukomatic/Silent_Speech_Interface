@@ -10,9 +10,9 @@
 
 - **Authoritative spec**: `PLAN.md` in this repo.
 - **Mirror in Anytype**: the "Silent Speech Interface" object in the **Personal** space.
-  - `objectId: bafyreidvcsd6a7f347t3cfwkl24iynkp2vpksic4jsd3smftnbmdacx2ye`
-  - `spaceId:  bafyreigrow6e4gfrkowor4zl3lobn7q6d27cldmzxbedl4jqkhbi66gisi.18unpclyorm2i`
+  - Anytype object/space IDs live in `.private/anytype.json` (gitignored). Read that file when you need to make API calls; do not paste the IDs into committed docs, AGENTS.md, or code comments.
   - When the user says "update the plan" without specifying which, update **both** `PLAN.md` and the Anytype object. Anytype API is documented in `../Server/AGENTS.md`.
+  - API version: `2025-11-08` (also in `.private/anytype.json`). The string `2026-07-01` in `~/.config/opencode/opencode.jsonc` is a known-broken placeholder.
 - When `PLAN.md` and Anytype drift, `PLAN.md` wins (it is what gets committed; Anytype is a read mirror).
 
 ## Project shape (planned, per `PLAN.md`)
@@ -50,9 +50,39 @@
 
 ## What is NOT decided yet
 
-- No code style / formatter / linter is configured. **Ask before introducing one** (black? ruff? something else?). The user has not expressed a preference.
 - No test framework is set up. The repo has no executable code yet, so there is nothing to test.
 - No pre-commit hooks. No CI.
+- No CI.
+
+## Linters, formatters, type checks, pre-commit
+
+**Linter / formatter / type checker — installed in the `ssi` conda env:**
+- **ruff** — fast linter. Catches unused imports, undefined names, common bugs (rules: `E`, `F`, `W`, `I` for isort, plus `B` for bugbear, `UP` for pyupgrade, `SIM` for simplify). Run with `ruff check .` and `ruff format .`.
+- **black** — opinionated code formatter. No config needed, eliminates formatting debate. Run with `black .`.
+- **mypy** — static type checker. Catches type errors before runtime. Run with `mypy pc/ firmware/`. Strict mode (`--strict`) once code is more mature.
+
+**Order of operations** (so the chain doesn't fight itself):
+1. `ruff format .` (or just `black .` — they conflict, pick one. Ruff's formatter is faster and now considered feature-complete; we use ruff for both lint + format).
+2. `ruff check . --fix` (apply safe auto-fixes)
+3. `mypy pc/`
+
+**What are pre-commit hooks?**
+Git has a feature where scripts in `.git/hooks/` (or `.husky/`) run automatically before/after certain git actions. The most common one is `pre-commit` — a Python tool (`pre-commit.com`) that runs *before* each `git commit`. If any hook fails, the commit is blocked until you fix the issue.
+
+Typical hooks for this project:
+- `ruff check --fix` + `ruff format` on staged files
+- `mypy` on staged files
+- `nbstripout` on staged `.ipynb` files (strips output so notebooks don't bloat the diff)
+- `detect-private-key` / basic secret scan
+
+Once installed (`pre-commit install`), they run on every commit automatically — no need to remember. CI can re-run the same hooks to catch anything that slipped through locally.
+
+The actual `.pre-commit-config.yaml` is set up alongside the other config files. Dev installs it once with `pre-commit install` after `pip install pre-commit` (or `conda install pre-commit`).
+
+Run on demand (without committing):
+```bash
+pre-commit run --all-files
+```
 
 ## Commit & push workflow
 
